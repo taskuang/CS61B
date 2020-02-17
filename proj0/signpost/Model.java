@@ -521,6 +521,20 @@ class Model implements Iterable<Model.Sq> {
          */
         boolean connectable(Sq s1) {
             // FIXME
+            if (this.direction() != Place.dirOf(this.x, this.y, s1.x, s1.y)){
+                return false;
+            }
+            if (s1.predecessor() != null || this.successor() != null || s1.sequenceNum() == 1 || this.sequenceNum() == size()){
+                return false;
+            }
+            if (s1.sequenceNum() != 0 && this.sequenceNum() != 0){
+                if (this.sequenceNum() != s1.sequenceNum() - 1)
+                    return false;
+            }
+            if (this.sequenceNum() == 0 & s1.sequenceNum() == 0){
+                if (s1.group() == this.group() && (s1.group() != -1 && this.group() != -1))
+                    return false;
+            }
             return true;
         }
 
@@ -532,7 +546,9 @@ class Model implements Iterable<Model.Sq> {
                 return false;
             }
             int sgroup = s1.group();
-
+            int tgroup = this.group();
+            int ogThis = this.sequenceNum();
+            int ogS1 = s1.sequenceNum();
             _unconnected -= 1;
 
             // FIXME: Connect this square to its successor:
@@ -551,7 +567,38 @@ class Model implements Iterable<Model.Sq> {
             //          group of this square's head to the result of joining
             //          the two groups.
 
+            this._successor = s1;
+            s1._predecessor = this;
+            if (this.sequenceNum() != 0) {
+                Sq temp = this;
+                while (temp.successor() != null){
+                    temp.successor()._sequenceNum = temp.sequenceNum() + 1;
+                    temp = temp.successor();
+                }
+            }
+            if (s1.sequenceNum() != 0){
+                Sq temp = s1;
+                while (temp.predecessor() != null){
+                    temp.predecessor()._sequenceNum = temp.sequenceNum() - 1;
+                    temp = temp.predecessor();
+                }
+            }
+            if (this.sequenceNum() == 0 & s1.sequenceNum() == 0){
+                this._head._group = joinGroups(sgroup, tgroup);
+            }
+            Sq iterator = s1;
+            while (iterator != null){
+                iterator._head = this.head();
+                iterator = iterator.successor();
+            }
+            if (this.sequenceNum() != 0 & ogThis == 0){
+                releaseGroup(this.group());
+            }
+            if  (s1.sequenceNum() != 0 & ogS1 == 0){
+                releaseGroup(sgroup);
+            }
             return true;
+
         }
 
         /** Disconnect this square from its current successor, if any. */
