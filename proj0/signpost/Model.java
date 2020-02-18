@@ -90,28 +90,6 @@ class Model implements Iterable<Model.Sq> {
         _solution = new int[_width][_height];
         deepCopy(solution, _solution);
 
-        // DUMMY SETUP
-        // This is a particular puzzle provided as a filler until the
-        // puzzle-generation software is complete.
-        // FIXME: Remove everything down to and including
-        // "// END DUMMY SETUP".
-        _board = new Sq[][] {
-            { new Sq(0, 0, 0, false, 2, -1), new Sq(0, 1, 0, false, 2, -1),
-              new Sq(0, 2, 0, false, 4, -1), new Sq(0, 3, 1, true, 2, 0) },
-            { new Sq(1, 0, 0, false, 2, -1), new Sq(1, 1, 0, false, 2, -1),
-              new Sq(1, 2, 0, false, 6, -1), new Sq(1, 3, 0, false, 2, -1) },
-            { new Sq(2, 0, 0, false, 6, -1), new Sq(2, 1, 0, false, 2, -1),
-              new Sq(2, 2, 0, false, 6, -1), new Sq(2, 3, 0, false, 2, -1) },
-            { new Sq(3, 0, 16, true, 0, 0), new Sq(3, 1, 0, false, 5, -1),
-              new Sq(3, 2, 0, false, 6, -1), new Sq(3, 3, 0, false, 4, -1) }
-        };
-        for (Sq[] col: _board) {
-            for (Sq sq : col) {
-                _allSquares.add(sq);
-            }
-        }
-        // END DUMMY SETUP
-
         // FIXME: Initialize _board so that _board[x][y] contains the Sq object
         //        representing the contents at cell (x, y), _allSquares
         //        contains the list of all Sq objects on the board, and
@@ -119,14 +97,37 @@ class Model implements Iterable<Model.Sq> {
         //        contains sequence number k.  Check that all numbers from
         //        1 - last appear; else throw IllegalArgumentException (see
         //        badArgs utility).
-
+        _board = new Sq[width()][height()];
+        _solnNumToPlace = new Place[last + 1];
+        for (int i = 0; i < width(); i++){
+            for (int j = 0; j < height(); j++){
+                if (_solution[i][j] == 1 || _solution[i][j] == last)
+                    _board[i][j] = new Sq(i, j, _solution[i][j], true, arrowDirection(i, j), 0);
+                else
+                    _board[i][j] = new Sq(i, j, 0, false, arrowDirection(i, j), -1);
+                _allSquares.add(_board[i][j]);
+                _solnNumToPlace[_solution[i][j]] = Place.pl(i, j);
+            }
+        }
+        for (int i = 1; i < _solnNumToPlace.length; i++){
+            if (_solnNumToPlace[i] == null)
+                throw badArgs("IllegalArgumentException");
+        }
         // FIXME: For each Sq object on the board, set its _successors list
         //        to the list of locations of all cells that it might
         //        connect to (i.e., all cells that are a queen move away
         //        in the direction of its arrow).
         //        Likewise, set its _predecessors list to the list of
         //        all cells that might connect to it.
-
+        for (int i = 0; i < _width; i++){
+            for (int j = 0; j < _height; j++) {
+                _board[i][j]._successors = allSuccessors(_board[i][j].pl, _board[i][j]._dir);
+                _board[i][j]._predecessors = new PlaceList();
+                for (Sq s: _allSquares) {
+                    _board[i][j]._predecessors.add(s.pl);
+                }
+            }
+        }
         _unconnected = last - 1;
     }
 
@@ -263,6 +264,13 @@ class Model implements Iterable<Model.Sq> {
     private int arrowDirection(int x, int y) {
         int seq0 = _solution[x][y];
         // FIXME
+        for (int i = 0; i < _solution.length; i++) {
+            for (int j = 0; j < _solution[0].length; j++) {
+                if (_solution[i][j] == seq0 + 1) {
+                    return Place.dirOf(x, y, i, j);
+                }
+            }
+        }
         return 0;
     }
 
