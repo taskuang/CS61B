@@ -144,6 +144,14 @@ class Model implements Iterable<Model.Sq> {
         //        the Sq objects in MODEL other than their _successor,
         //        _predecessor, and _head fields (which can't necessarily be
         //        set until all the Sq objects are first created.)
+        _board = new Sq[_width][_height];
+        for (int i = 0; i < _width; i++){
+            for (int j = 0; j < _height; j++){
+                Sq original = model.get(i, j);
+                _board[i][j] = new Sq(original.x, original.y, original.sequenceNum(), original.hasFixedNum(), original.direction(), original.group());
+                _allSquares.add(_board[i][j]);
+            }
+        }
 
         // FIXME: Once all the new Sq objects are in place, fill in their
         //        _successor, _predecessor, and _head fields.  For example,
@@ -154,6 +162,21 @@ class Model implements Iterable<Model.Sq> {
         //        position (4, 1) in this copy.  Be careful NOT to have
         //        any of these fields in the copy pointing at the old Sqs in
         //        MODEL.
+        for (Sq s: _allSquares){
+            Sq original = model.get(s.pl);
+            if (original._successor != null)
+                s._successor = model.get(original.successor().pl);
+            else
+                s._successor = null;
+            if (original._predecessor != null)
+                s._predecessor = model.get(original.predecessor().pl);
+            else
+                s._successor = null;
+            if (original.head() != null)
+                s._head = model.get(original.head().pl);
+            else
+                s._head = null;
+        }
     }
 
     /** Returns the width (number of columns of cells) of the board. */
