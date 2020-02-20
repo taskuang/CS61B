@@ -18,7 +18,7 @@
 # Name of package containing main procedure 
 PACKAGE = signpost
 
-PYTHON = python3
+PYTHON = python
 
 STYLEPROG = style61b
 
