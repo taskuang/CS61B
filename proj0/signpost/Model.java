@@ -7,8 +7,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Arrays;
 
-import static signpost.Place.pl;
-import static signpost.Place.PlaceList;
+import static signpost.Place.*;
 import static signpost.Utils.*;
 
 /** The state of a Signpost puzzle.  Each cell has coordinates (x, y),
@@ -147,8 +146,7 @@ class Model implements Iterable<Model.Sq> {
         _board = new Sq[_width][_height];
         for (int i = 0; i < _width; i++){
             for (int j = 0; j < _height; j++){
-                Sq original = model.get(i, j);
-                _board[i][j] = new Sq(original.x, original.y, original.sequenceNum(), original.hasFixedNum(), original.direction(), original.group());
+                _board[i][j] = new Sq(model.get(i, j));
                 _allSquares.add(_board[i][j]);
             }
         }
@@ -166,16 +164,10 @@ class Model implements Iterable<Model.Sq> {
             Sq original = model.get(s.pl);
             if (original._successor != null)
                 s._successor = model.get(original.successor().pl);
-            else
-                s._successor = null;
             if (original._predecessor != null)
                 s._predecessor = model.get(original.predecessor().pl);
-            else
-                s._successor = null;
             if (original.head() != null)
                 s._head = model.get(original.head().pl);
-            else
-                s._head = null;
         }
     }
 
@@ -272,13 +264,28 @@ class Model implements Iterable<Model.Sq> {
      *  unconnected and are separated by a queen move.  Returns true iff
      *  any changes were made. */
     boolean autoconnect() {
-        return false; // FIXME
+        for (Sq s: _allSquares){
+            if (s.sequenceNum() != 0 && s._successor == null){
+                for (Place p: s.successors()){
+                    if (s.connectable(get(p))){
+                        s.connect(get(p));
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /** Sets the numbers in this board's squares to the solution from which
      *  this board was last initialized by the constructor. */
     void solve() {
-        // FIXME
+        for (Sq s1: _allSquares) {
+            for (Sq s2: _allSquares) {
+                if (_solution[s1.x][s1.y] + 1 == _solution[s2.x][s2.y])
+                    s1.connect(s2);
+            }
+        }
         _unconnected = 0;
     }
 
@@ -290,7 +297,7 @@ class Model implements Iterable<Model.Sq> {
         for (int i = 0; i < _solution.length; i++) {
             for (int j = 0; j < _solution[0].length; j++) {
                 if (_solution[i][j] == seq0 + 1) {
-                    return Place.dirOf(x, y, i, j);
+                    return dirOf(x, y, i, j);
                 }
             }
         }
@@ -552,7 +559,7 @@ class Model implements Iterable<Model.Sq> {
          */
         boolean connectable(Sq s1) {
             // FIXME
-            if (this.direction() != Place.dirOf(this.x, this.y, s1.x, s1.y)){
+            if (this.direction() != dirOf(this.x, this.y, s1.x, s1.y)){
                 return false;
             }
             if (s1.predecessor() != null || this.successor() != null || s1.sequenceNum() == 1 || this.sequenceNum() == size()){
@@ -563,7 +570,7 @@ class Model implements Iterable<Model.Sq> {
                     return false;
             }
             if (this.sequenceNum() == 0 & s1.sequenceNum() == 0){
-                if (s1.group() == this.group() && (s1.group() != -1 && this.group() != -1))
+                if (s1._head == this._head)
                     return false;
             }
             return true;
@@ -585,21 +592,10 @@ class Model implements Iterable<Model.Sq> {
             // FIXME: Connect this square to its successor:
             //        + Set this square's _successor field and S1's
             //          _predecessor field.
-            //        + If this square has a number, number all its successors
-            //          accordingly (if needed).
-            //        + If S1 is numbered, number this square and its
-            //          predecessors accordingly (if needed).
-            //        + Set the _head fields of this square's successors this
-            //          square's _head.
-            //        + If either of this square or S1 used to be unnumbered
-            //          and is now numbered, release its group of whichever
-            //          was unnumbered, so that it can be reused.
-            //        + If both this square and S1 are unnumbered, set the
-            //          group of this square's head to the result of joining
-            //          the two groups.
-
             this._successor = s1;
             s1._predecessor = this;
+            //        + If this square has a number, number all its successors
+            //          accordingly (if needed).
             if (this.sequenceNum() != 0) {
                 Sq temp = this;
                 while (temp.successor() != null){
@@ -607,6 +603,8 @@ class Model implements Iterable<Model.Sq> {
                     temp = temp.successor();
                 }
             }
+            //        + If S1 is numbered, number this square and its
+            //          predecessors accordingly (if needed).
             if (s1.sequenceNum() != 0){
                 Sq temp = s1;
                 while (temp.predecessor() != null){
@@ -614,22 +612,29 @@ class Model implements Iterable<Model.Sq> {
                     temp = temp.predecessor();
                 }
             }
-            if (this.sequenceNum() == 0 & s1.sequenceNum() == 0){
-                this._head._group = joinGroups(sgroup, tgroup);
-            }
+            //        + Set the _head fields of this square's successors this
+            //          square's _head.
             Sq iterator = s1;
             while (iterator != null){
                 iterator._head = this.head();
                 iterator = iterator.successor();
             }
+            //        + If either of this square or S1 used to be unnumbered
+            //          and is now numbered, release its group of whichever
+            //          was unnumbered, so that it can be reused.
             if (this.sequenceNum() != 0 & ogThis == 0){
                 releaseGroup(this.group());
             }
             if  (s1.sequenceNum() != 0 & ogS1 == 0){
                 releaseGroup(sgroup);
             }
+            //        + If both this square and S1 are unnumbered, set the
+            //          group of this square's head to the result of joining
+            //          the two groups.
+            if (this.sequenceNum() == 0 & s1.sequenceNum() == 0){
+                this._head._group = joinGroups(sgroup, tgroup);
+            }
             return true;
-
         }
 
         /** Disconnect this square from its current successor, if any. */
@@ -722,6 +727,7 @@ class Model implements Iterable<Model.Sq> {
                 temp._head = next;
                 temp = temp.successor();
             }
+
         }
 
         @Override

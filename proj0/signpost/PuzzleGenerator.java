@@ -22,9 +22,8 @@ class PuzzleGenerator implements PuzzleSource {
     public Model getPuzzle(int width, int height, boolean allowFreeEnds) {
         Model model =
             new Model(makePuzzleSolution(width, height, allowFreeEnds));
-        // FIXME: Remove the "//" on the following two lines.
-        // makeSolutionUnique(model);
-        // model.autoconnect();
+        makeSolutionUnique(model);
+        model.autoconnect();
         return model;
     }
 
@@ -127,6 +126,21 @@ class PuzzleGenerator implements PuzzleSource {
      *  number in sequence). */
     static Sq findUniqueSuccessor(Model model, Sq start) {
         // FIXME: Fill in to satisfy the comment.
+        int solutions = 0;
+        Sq unique = null;
+        Sq case2 = null;
+        for (Sq s: model){
+            if (start.connectable(s)){
+                solutions++;
+                unique = s;
+                if (s.sequenceNum() == start.sequenceNum() + 1)
+                    case2 = s;
+            }
+        }
+        if (solutions == 1)
+            return unique;
+        else if (start.sequenceNum() > 0)
+            return case2;
         return null;
     }
 
@@ -156,6 +170,16 @@ class PuzzleGenerator implements PuzzleSource {
      *  already finds the other cases of numbered, unconnected cells. */
     static Sq findUniquePredecessor(Model model, Sq end) {
         // FIXME: Replace the following to satisfy the comment.
+        Sq unique = null;
+        int solutions = 0;
+        for (Sq s: model){
+            if (s.connectable(end)){
+                solutions++;
+                unique = s;
+            }
+        }
+        if (solutions == 1)
+            return unique;
         return null;
     }
 
