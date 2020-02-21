@@ -264,17 +264,18 @@ class Model implements Iterable<Model.Sq> {
      *  unconnected and are separated by a queen move.  Returns true iff
      *  any changes were made. */
     boolean autoconnect() {
+        boolean connected = false;
         for (Sq s: _allSquares){
             if (s.sequenceNum() != 0 && s._successor == null){
                 for (Place p: s.successors()){
-                    if (s.connectable(get(p))){
+                    if (s.connectable(get(p)) && s.sequenceNum() + 1 == get(p).sequenceNum()){
                         s.connect(get(p));
-                        return true;
+                        connected = true;
                     }
                 }
             }
         }
-        return false;
+        return connected;
     }
 
     /** Sets the numbers in this board's squares to the solution from which
@@ -523,7 +524,7 @@ class Model implements Iterable<Model.Sq> {
                 String.format("%s%s",
                               g < ALPHA_SIZE ? ""
                               : Character.toString((char) (g / ALPHA_SIZE
-                                                           + 'a')),
+                                                            + 'a')),
                               Character.toString((char) (g % ALPHA_SIZE
                                                          + 'a')));
             if (this == _head) {
