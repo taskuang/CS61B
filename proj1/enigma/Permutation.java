@@ -15,13 +15,13 @@ class Permutation {
      *  Whitespace is ignored. */
     Permutation(String cycles, Alphabet alphabet) {
         _alphabet = alphabet;
-        // FIXME
+        _cycles = cycles.replaceAll("[\\(\\)\\s]", "");
     }
 
     /** Add the cycle c0->c1->...->cm->c0 to the permutation, where CYCLE is
      *  c0c1...cm. */
     private void addCycle(String cycle) {
-        // FIXME
+        _cycles += cycle;
     }
 
     /** Return the value of P modulo the size of this permutation. */
@@ -35,19 +35,23 @@ class Permutation {
 
     /** Returns the size of the alphabet I permute. */
     int size() {
-        return 0; // FIXME
+        return _alphabet.size();
     }
 
     /** Return the result of applying this permutation to P modulo the
      *  alphabet size. */
     int permute(int p) {
-        return 0;  // FIXME
+        char charIn = _alphabet.toChar(wrap(p));
+        char charOut = permute(charIn);
+        return _alphabet.toInt(charOut);
     }
 
     /** Return the result of applying the inverse of this permutation
      *  to  C modulo the alphabet size. */
     int invert(int c) {
-        return 0;  // FIXME
+        char charIn = _alphabet.toChar(wrap(c));
+        char charOut = invert(charIn);
+        return _alphabet.toInt(charOut);
     }
 
     /** Return the result of applying this permutation to the index of P
@@ -76,4 +80,5 @@ class Permutation {
     private Alphabet _alphabet;
 
     // FIXME: ADDITIONAL FIELDS HERE, AS NEEDED
+    private String _cycles;
 }

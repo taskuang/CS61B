@@ -13,7 +13,7 @@ class TestUtils {
     /** Return an identifying error message for failed assertions.
      *  TESTID identifies the test, MSGFORMAT and ARGS provide
      *  the details, as for String.format. */
-    static String msg(String testId, String msgFormat, Object... args) {
+    static String msg(String testId, String msgFormat, char args) {
         return testId + " (" + String.format(msgFormat, args) + ")";
     }
 
