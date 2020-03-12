@@ -50,54 +50,32 @@ public class PermutationTest {
         perm = new Permutation("", UPPER);
         checkPerm("identity", UPPER_STRING, UPPER_STRING);
     }
-    public void testSize() {
-        Permutation k = new Permutation("(BACD)", new Alphabet("ABCD"));
-        Permutation i = new Permutation("(KA)", new Alphabet());
-        Permutation j = new Permutation("(A)", new Alphabet());
-        Permutation o = new Permutation("(B)", new Alphabet("ABSDFGETHJ0"));
-        assertEquals(26, j.size());
-        assertEquals(4, k.size());
-        assertEquals(26, i.size());
-        assertEquals(11, o.size());
-    }
 
-    public void testPermuteInt() {
-        Permutation k = new Permutation("(BACD)", new Alphabet("ABCD"));
-        Permutation i = new Permutation("(KA)", new Alphabet());
-        Permutation p = new Permutation("(123)", new Alphabet("1234!"));
-        assertEquals(0, k.permute(5));
-        assertEquals(0, i.permute(10));
-        assertEquals(4, p.permute(-1));
+    @Test
+    public void testIntPermute() {
+        perm = new Permutation("(ABCD) (EFGH)", UPPER);
+        assertEquals(1, perm.permute(0));
+        assertEquals(0, perm.permute(3));
     }
 
     @Test
-    public void testInvertInt() {
-        Permutation k = new Permutation("(BACD)", new Alphabet("ABCD"));
-        Permutation p = new Permutation("(123)", new Alphabet("1234!"));
-        Permutation j = new Permutation("(A)", new Alphabet());
-        assertEquals('B', p.invert('A'));
-        assertEquals('A', p.invert('C'));
-        assertEquals('!', p.invert('!'));
-        assertEquals('K', p.invert('K'));
+    public void testIntInvert() {
+        perm = new Permutation("(ABCD) (EFGH)", UPPER);
+        assertEquals(0, perm.invert(1));
+        assertEquals(3, perm.invert(0));
     }
 
     @Test
-    public void testPermuteChar() {
-        Permutation k = new Permutation("(BACD)", new Alphabet("ABCD"));
-        Permutation p = new Permutation("(123)", new Alphabet("1234!"));
-        Permutation o = new Permutation("", new Alphabet("AKSIRUDQ"));
-        assertEquals('C', p.permute('A'));
-        assertEquals('2', p.permute('1'));
-        assertEquals('D', p.permute('D'));
+    public void testCharPermute() {
+        perm = new Permutation("(ABCD) (EFGH)", UPPER);
+        assertEquals('B', perm.permute('A'));
+        assertEquals('A', perm.permute('D'));
     }
 
     @Test
-    public void testInvertChar() {
-        Permutation k = new Permutation("(BACD)", new Alphabet("ABCD"));
-        Permutation p = new Permutation("(123)", new Alphabet("1234!"));
-        assertEquals(1, p.invert(0));
-        assertEquals(3, p.invert(5));
-        assertEquals(4, p.invert(-1));
+    public void testCharCInvert() {
+        perm = new Permutation("(ABCD) (EFGH)", UPPER);
+        assertEquals('A', perm.invert('B'));
+        assertEquals('D', perm.invert('A'));
     }
-
 }

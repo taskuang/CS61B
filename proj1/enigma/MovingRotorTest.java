@@ -70,5 +70,23 @@ public class MovingRotorTest {
         rotor.set(25);
         checkRotor("Rotor I set", UPPER_STRING, NAVALZ_MAP.get("I"));
     }
-
+    @Test
+    public void checkNotch() {
+        setRotor("I", NAVALA, "L");
+        rotor.set(11);
+        assertEquals(true, rotor.atNotch());
+    }
+    @Test
+    public void testAdvance() {
+        MovingRotor mr2 = new MovingRotor(
+                "mr2", new Permutation(NAVALA.get("I"), UPPER), "BC");
+        mr2.set(10);
+        mr2.advance();
+        assertEquals(11, mr2.setting());
+        mr2.advance();
+        assertEquals(12, mr2.setting());
+        mr2.set(25);
+        mr2.advance();
+        assertEquals(0, mr2.setting());
+    }
 }
