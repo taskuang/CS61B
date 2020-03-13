@@ -7,7 +7,7 @@ import java.util.Collection;
 import static enigma.EnigmaException.*;
 
 /** Class that represents a complete enigma machine.
- *  @author
+ *  @author Tasman Kuang
  */
 class Machine {
 
@@ -45,9 +45,9 @@ class Machine {
         }
         _myRotors.clear();
         int rotates = 0;
-        for (String newRotor: rotors){
+        for (String newRotor: rotors) {
             if (_myRotors.contains(newRotor)) {
-                throw new EnigmaException("Rotors cannot be duplicated");
+                throw new EnigmaException("Rotors cannot be used twice");
             }
             if (_allRotors.containsKey(newRotor)) {
                 Rotor rotor = _allRotors.get(newRotor);
@@ -55,13 +55,12 @@ class Machine {
                     rotates++;
                 }
                 _myRotors.add(rotor);
-            }
-            else {
+            } else {
                 throw new EnigmaException("This rotor does not exist");
             }
         }
         if (!_myRotors.get(0).reflecting()) {
-            throw new EnigmaException("The first rotor is not a reflector");
+            throw new EnigmaException("First rotor must be reflector");
         }
         if (rotates != numPawls()) {
             throw new EnigmaException("Rotor order is incorrect");
@@ -77,7 +76,7 @@ class Machine {
         }
         for (int i = 1; i < setting.length(); i++) {
             if (!_alphabet.contains(setting.charAt(i))) {
-                throw new EnigmaException("Setting contains an incorrect value");
+                throw new EnigmaException("Setting contains an invalid value");
             }
             _myRotors.get(i + 1).set(setting.charAt(i));
         }
@@ -95,7 +94,7 @@ class Machine {
      *  the machine. */
     int convert(int c) {
         boolean advance = true;
-        if (_myRotors.get(_numRotors - 1).atNotch()){
+        if (_myRotors.get(_numRotors - 1).atNotch()) {
             advance = false;
         }
         for (int i = _numRotors - 1; i > 0; i--) {
@@ -133,14 +132,19 @@ class Machine {
     /** Common alphabet of my rotors. */
     private final Alphabet _alphabet;
 
+    /** Number of rotors. */
     private int _numRotors;
 
+    /** Number of pawls. */
     private int _pawls;
 
+    /** Hashmap of rotor names onto the rotors. */
     private HashMap<String, Rotor> _allRotors;
 
+    /** List of the machine's rotors. */
     private ArrayList<Rotor> _myRotors;
 
+    /** Initialized plugboard. */
     private Permutation _plugBoard;
 
 }

@@ -5,14 +5,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import static enigma.EnigmaException.*;
 
 /** Enigma simulator.
- *  @author
+ *  @author Tasman Kuang
  */
 public final class Main {
 
@@ -80,24 +79,12 @@ public final class Main {
     private void process() {
         Machine enigma = readConfig();
         if (!_input.hasNext("\\*")) {
-            throw new EnigmaException("Incorrect setting");
+            throw new EnigmaException("Either invalid input or "
+                   + "no rotors have been passed into machine");
         }
         String setting = _input.nextLine();
+        setUp(enigma, setting);
         while (_input.hasNextLine()) {
-            /**setUp(enigma, setting);
-            setting = _input.nextLine();
-            if (!setting.isEmpty()) {
-                while (!setting.contains("*") && _input.hasNextLine()) {
-                    printMessageLine(enigma.convert(setting));
-                    setting = _input.nextLine();
-                }
-                if (!(setting.isEmpty() && setting.contains("*"))) {
-                    printMessageLine(enigma.convert(setting));
-                }
-            }
-            else {
-                _output.println();
-            }**/
             setting = _input.nextLine();
             if (setting.startsWith("*")) {
                 setUp(enigma, setting);
@@ -113,35 +100,24 @@ public final class Main {
     private Machine readConfig() {
         try {
             _alphabet = new Alphabet(_config.next());
-            if (_alphabet.contains('*') || _alphabet.contains('(') || _alphabet.contains(')')) {
-                throw new EnigmaException("Configuration contains illegal characters.");
-            }
-            if (!_config.hasNext()) {
-                throw new EnigmaException("Configuration is empty");
-            }
             if (!_config.hasNextInt()) {
-                throw new EnigmaException("Rotor is unreachable");
+                throw new EnigmaException("Rotor slot is unreachable");
             }
             int slots = _config.nextInt();
-
             if (!_config.hasNextInt()) {
                 throw new EnigmaException("Pawls are unreachable");
             }
-            int movingRotors = _config.nextInt();
+            int pawl = _config.nextInt();
 
-            if (movingRotors >= slots) {
-                throw new EnigmaException("Too many pawls");
+            if (pawl >= slots) {
+                throw new EnigmaException("Too many pawls entered");
             }
-            if (!(movingRotors >= 0 || slots >= 0)) {
-                throw new EnigmaException("Pawls and rotors need to be greater than 0");
-            }
-
-            ArrayList<Rotor> allRotors = new ArrayList<>();
+            ArrayList<Rotor> rotors = new ArrayList<>();
+            _current = _config.next();
             while (_config.hasNext()) {
-                allRotors.add(readRotor());
+                rotors.add(readRotor());
             }
-
-            return new Machine(_alphabet, slots, movingRotors, allRotors);
+            return new Machine(_alphabet, slots, pawl, rotors);
         } catch (NoSuchElementException excp) {
             throw error("configuration file truncated");
         }
@@ -150,38 +126,30 @@ public final class Main {
     /** Return a rotor, reading its description from _config. */
     private Rotor readRotor() {
         try {
-            String name = _config.next();
-            String notch = _config.next();
-            /**if (name.contains("(") || name.contains(")")) {
+            String name = _current;
+            if (name.contains("(")) {
                 throw new EnigmaException("Invalid configuration");
             }
-            name = _config.next();
-            char type = name.charAt(0);
-            String notches = name.substring(1);
-            if (type == 'M' && notches.isEmpty()) {
-                throw new EnigmaException("Moving rotor needs notches.");
+            _current = _config.next();
+            String notch = _current;
+            _current = _config.next();
+            String strPerm = "";
+            while (_current.contains("(")) {
+                strPerm += _current + " ";
+                if (!_config.hasNext()) {
+                    strPerm += _current;
+                    break;
+                } else {
+                    _current = _config.next();
+                }
             }
-            String permutation = "";
-            name = _config.next();
-            while (name.contains("(") && _config.hasNext()) {
-                permutation += name + " ";
-                name = _config.next();
-            }
-            if (!_config.hasNext()) {
-                permutation += name;
-            }**/
-            char type = notch.charAt(0);
-            String permutation = "";
-            while (_config.hasNext("\\(.*")) {
-                permutation += _config.next("(\\([^\\)]*\\))*");
-            }
-            Permutation perm = new Permutation(permutation, _alphabet);
-            if (type == 'N') {
-                return new FixedRotor(name, perm);
-            } else if (type == 'M') {
+            Permutation perm = new Permutation(strPerm, _alphabet);
+            if (notch.charAt(0) == 'M') {
                 return new MovingRotor(name, perm, notch.substring(1));
-            } else if (type == 'M') {
-                return new Reflector(notch, perm);
+            } else if (notch.charAt(0) == 'N') {
+                return new FixedRotor(name, perm);
+            } else if (notch.charAt(0) == 'R') {
+                return new Reflector(name, perm);
             } else {
                 throw new EnigmaException("No rotor type");
             }
@@ -193,24 +161,21 @@ public final class Main {
     /** Set M according to the specification given on SETTINGS,
      *  which must have the format specified in the assignment. */
     private void setUp(Machine M, String settings) {
-        String[] s = settings.split("\\s");
-        String[] rotors = new String[M.numRotors()];
+        String[] allSettings = settings.split(" ");
+        String[] allRotors = new String[M.numRotors()];
         for (int i = 0; i < M.numRotors(); i++) {
-            rotors[i] = s[i + 1];
+            allRotors[i] = allSettings[i + 1];
         }
-        for (String r: rotors) {
+        for (String r: allRotors) {
             if (r.contains("(")) {
-                throw new EnigmaException("Incorrect config.");
+                throw new EnigmaException("Invalid configuration");
             }
         }
-        M.insertRotors(rotors);
-        M.setRotors(s[M.numRotors() + 1]);
+        M.insertRotors(allRotors);
+        M.setRotors(allSettings[M.numRotors() + 1]);
         String setting = "";
-        for (int i = M.numRotors() + 2; i < s.length; i++) {
-            if (!s[i].contains("(") || !s[i].contains(")")) {
-                throw new EnigmaException("Incorrect plugboard");
-            }
-            setting += s[i] + " ";
+        for (int i = M.numRotors() + 2; i < allSettings.length; i++) {
+            setting += allSettings[i] + " ";
         }
         M.setPlugboard(new Permutation(setting, _alphabet));
     }
@@ -238,4 +203,8 @@ public final class Main {
 
     /** File for encoded/decoded messages. */
     private PrintStream _output;
+
+    /** Last configuration input. */
+    private String _current;
 }
+

@@ -54,28 +54,28 @@ public class PermutationTest {
     @Test
     public void testIntPermute() {
         perm = new Permutation("(ABCD) (EFGH)", UPPER);
+        assertEquals(3, perm.permute(2));
         assertEquals(1, perm.permute(0));
-        assertEquals(0, perm.permute(3));
     }
 
     @Test
     public void testIntInvert() {
         perm = new Permutation("(ABCD) (EFGH)", UPPER);
         assertEquals(0, perm.invert(1));
-        assertEquals(3, perm.invert(0));
+        assertEquals(2, perm.invert(3));
     }
 
     @Test
     public void testCharPermute() {
         perm = new Permutation("(ABCD) (EFGH)", UPPER);
-        assertEquals('B', perm.permute('A'));
         assertEquals('A', perm.permute('D'));
+        assertEquals('C', perm.permute('B'));
     }
 
     @Test
     public void testCharCInvert() {
         perm = new Permutation("(ABCD) (EFGH)", UPPER);
-        assertEquals('A', perm.invert('B'));
         assertEquals('D', perm.invert('A'));
+        assertEquals('B', perm.invert('C'));
     }
 }

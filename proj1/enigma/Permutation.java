@@ -7,7 +7,7 @@ import static enigma.EnigmaException.*;
 
 /** Represents a permutation of a range of integers starting at 0 corresponding
  *  to the characters of an alphabet.
- *  @author
+ *  @author Tasman Kuang
  */
 class Permutation {
 
@@ -108,6 +108,6 @@ class Permutation {
     /** Alphabet of this permutation. */
     private Alphabet _alphabet;
 
-    // FIXME: ADDITIONAL FIELDS HERE, AS NEEDED
+    /** Cycles of this permutation. */
     private ArrayList<String> _cycles;
 }
