@@ -1,17 +1,19 @@
 Q: Is one GrowList implementation always better than the others?
-A:
+A: No. The runtime of the implementation depends on the size of the input
 
 Q: Why is the runtime for N insertions into a geometrically resizing list a Theta(N) operation?
-A:
+A: For geometrically resizing, the list size is constantly being doubled. Therefore, since adding elements doesn't necessarily fill up the list each time, arrayCopy
+   doesn't have to be called on again for the next iteration. Therefore, the runtime of the algorithm depends only on how many elements the list needs to be filled with.
 
 Q: Why is the runtime for N insertions into a arithmetically resizing list a Theta(N^2) operation?
-A:
+A: Once the list reaches full capacity, it increases only the size of the list by one and fills it until it's filled completely. Everytime a list is added
+   arrayCopy is called again. There, the runtime of the algorithm is the square of the input size.
 
 Q: How does the runtime per operation for the ArithGrowList compare to that of GeomGrowList and JavaGrowList? Specifically look at the non-accumulated plots and desribe the trends for how long each operation takes as a function of how many elements have already been inserted in the list.
-A:
+A: The runtime for ArithGrowList, which appears to be a hybrid between quadratic and linear, is a lot higher than GeoGrowList and JavaGrowList, which are both clearly quadratic.
 
 Q: When are there spikes in the per operation runtime graphs for each of the implementations? Do these make sense to you? Hint: some of these should and others might not. Empirical runtime can be quite messy and depends on machine specifics which will be revealed in other subsequent classes like CS61C.
-A:
+A: There seems to be a spike in the operation runtimes every +50 increments in the arraySize. I'm guessing this makes sense because the algorithm makes a call to arrayCopy to create another list, which is an operation that would further require more resources
 
 Q: Optional: Try changing the code for GeomGrowList to resize by a different factor. How does this effect the theoretical asymptotic runtime? How does this effect the plotted runtime?
 A:
