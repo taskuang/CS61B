@@ -23,4 +23,3 @@ quadratic in its scaling behavior for in order strings?
 Before submitting, make sure that your ECHashStringSet is capable of
 handling inputs of size 1000000 in a reasonable amount of time (a few
 seconds).
-

@@ -1,5 +1,7 @@
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -7,10 +9,18 @@ import java.util.List;
  * @author
  */
 public class ECHashStringSetTest  {
-    // FIXME: Add your own tests for your ECHashStringSetTest
 
     @Test
-    public void testNothing() {
-        // FIXME: Delete this function and add your own tests
+    public void testHashString() {
+        ECHashStringSet hash = new ECHashStringSet();
+        hash.put("d");
+        hash.put("c");
+        hash.put("a");
+        hash.put("b");
+        assertTrue(hash.contains("a"));
+        assertTrue(hash.contains("b"));
+        assertTrue(hash.contains("c"));
+        assertTrue(hash.contains("d"));
+        assertFalse(hash.contains("e"));
     }
 }
