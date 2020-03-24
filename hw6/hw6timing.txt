@@ -1,4 +1,4 @@
-1a. Results for InsertRandomSpeedTest for N = 1000000:
+1a. Results for InsertRandomSpeedTest for N = 1000000: 64.3 seconds
 
 
 1b. Results for InsertRandomSpeedTest for N = 2000000:
@@ -7,6 +7,7 @@
 1c. Does your ECHashStringSet look roughly linear or roughly quadratic
 in its scaling behavior for random strings?
 
+Roughly quadratic
 
 
 

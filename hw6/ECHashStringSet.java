@@ -24,21 +24,25 @@ class ECHashStringSet implements StringSet {
         if ((double)_size / (double)_store.length > MAX_LOAD) {
             reSize();
         }
-        _store[s.hashCode() & 0x7fffffff % _store.length].add(s);
+        int hash = s.hashCode() & 0x7fffffff % _store.length;
+        if (_store[hash] == null) {
+            _store[hash] = new LinkedList<>();
+        }
+        _store[hash].add(s);
         _size++;
     }
 
+
     private void reSize() {
-        LinkedList<String>[] prevStorage = _store;
-        _store = new LinkedList[prevStorage.length * 2];
-        _size = 0;
-        for (LinkedList<String> l : prevStorage) {
-            if (l != null) {
-                for (String s: l) {
-                    put(s);
-                }
+        ECHashStringSet prevStore = new ECHashStringSet();
+        prevStore._store = new LinkedList[_size * 5];
+        for (int i = 0; i < _store.length; i++) {
+            for (String s : _store[i]) {
+                prevStore.put(s);
             }
         }
+        _store = prevStore._store;
+
     }
 
     @Override

@@ -16,21 +16,39 @@ public class BSTStringSet implements StringSet, Iterable<String>, SortedStringSe
 
     @Override
     public void put(String s) {
-        _root = putHelper(s, _root);
+        Node current = putHelper(s);
+        if (current == null) {
+            _root = new Node(s);
+        } else {
+            if (s.compareTo(current.s) > 0) {
+                current.right = new Node(s);
+            } else {
+                current.left = new Node(s);
+            }
+        }
     }
 
-    /** Helper method for put, add S into P's tree,
-     * return the root node after adding. */
-    public Node putHelper(String s, Node p) {
-        if (p == null) {
-            return new Node(s);
+
+    private Node putHelper(String s) {
+        if (_root == null) {
+            return null;
         }
-        if (s.compareTo(p.s) < 0) {
-            p.left = putHelper(s, p.left);
-        } else {
-            p.right = putHelper(s, p.right);
+        Node current = _root;
+        Node next = null;
+        while (true) {
+            if (s.compareTo(current.s) < 0) {
+                next = current.left;
+            } else if (s.compareTo(current.s) > 0) {
+                next = current.right;
+            }  else {
+                return current;
+            }
+            if (next == null) {
+                return current;
+            } else {
+                current = next;
+            }
         }
-        return p;
     }
 
     @Override
@@ -38,8 +56,6 @@ public class BSTStringSet implements StringSet, Iterable<String>, SortedStringSe
         return containsHelper(s, _root);
     }
 
-    /** Helper method for contains, return true if
-     * the tree of P contains string S */
     public boolean containsHelper(String s, Node p) {
         if (p == null) {
             return false;
@@ -126,19 +142,12 @@ public class BSTStringSet implements StringSet, Iterable<String>, SortedStringSe
         return new BSTIterator(_root);
     }
 
-    /** Inorder iterator over BSTs. */
     private static class inorderBSTIterator implements Iterator<String> {
-        /** Stack of nodes to be delivered.  The values to be delivered
-         *  are (a) the label of the top of the stack, then (b)
-         *  the labels of the right child of the top of the stack inorder,
-         *  then (c) the nodes in the rest of the stack (i.e., the result
-         *  of recursively applying this rule to the result of popping
-         *  the stack. */
+
         private Stack<Node> _toDo = new Stack<>();
         private String _low;
         private String _high;
 
-        /** A new iterator over the labels in NODE. */
         inorderBSTIterator(String low, String high, Node node) {
             _low = low;
             _high = high;
@@ -157,10 +166,6 @@ public class BSTStringSet implements StringSet, Iterable<String>, SortedStringSe
             }
             Node node = _toDo.pop();
             addTree(node.right);
-            while (node.s.compareTo(_low) <0) {
-                node = _toDo.pop();
-                addTree(node.right);
-            }
             return node.s;
         }
 
@@ -169,7 +174,6 @@ public class BSTStringSet implements StringSet, Iterable<String>, SortedStringSe
             throw new UnsupportedOperationException();
         }
 
-        /** Add the relevant subtrees of the tree rooted at NODE. */
         private void addTree(Node node) {
             if (node != null) {
                 if (node.s.compareTo(_high) >= 0) {
