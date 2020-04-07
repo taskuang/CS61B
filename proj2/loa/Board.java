@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 import static loa.Piece.*;
 import static loa.Square.*;
+import java.lang.Math;
 
 /** Represents the state of a game of Lines of Action.
  *  @author
@@ -51,7 +52,13 @@ class Board {
 
     /** Set my state to CONTENTS with SIDE to move. */
     void initialize(Piece[][] contents, Piece side) {
-        // FIXME
+        int index = 0;
+        for (int i = 0; i < contents.length; i++) {
+            for (int j = 0; j < contents[0].length; j++) {
+                _board[index] = contents[i][j];
+                index++;
+            }
+        }
         _turn = side;
         _moveLimit = DEFAULT_MOVE_LIMIT;
     }
@@ -66,7 +73,11 @@ class Board {
         if (board == this) {
             return;
         }
-        // FIXME
+        for (int i = 0; i < _board.length; i++) {
+            _board[i] = board._board[i];
+        }
+        _turn = board._turn;
+        _moveLimit = board._moveLimit;
     }
 
     /** Return the contents of the square at SQ. */
@@ -77,7 +88,10 @@ class Board {
     /** Set the square at SQ to V and set the side that is to move next
      *  to NEXT, if NEXT is not null. */
     void set(Square sq, Piece v, Piece next) {
-        // FIXME
+        _board[sq.index()] = v;
+        if (next != null) {
+            _turn = next;
+        }
     }
 
     /** Set the square at SQ to V, without modifying the side that
@@ -96,14 +110,33 @@ class Board {
      *  is false. */
     void makeMove(Move move) {
         assert isLegal(move);
-        // FIXME
+        if (get(move.getTo()) != EMP) {
+            _moves.add(move.captureMove());
+        }
+        else {
+            _moves.add(move);
+        }
+        set(move.getTo(), get(move.getFrom()), turn().opposite());
+        set(move.getFrom(), EMP);
+        _moveLimit--;
     }
 
     /** Retract (unmake) one move, returning to the state immediately before
      *  that move.  Requires that movesMade () > 0. */
     void retract() {
         assert movesMade() > 0;
-        // FIXME
+        Move move = _moves.remove(_moves.size() - 1);
+        //Move: move white piece from square A to B, square A now has EMP and B has white piece
+        set(move.getFrom(), turn().opposite(), _turn.opposite());
+        // set A to the opposite of current color (white) and reset turn to white
+        if (move.isCapture()) {
+            set(move.getTo(), turn().opposite());
+            // set the square B to opposite of white (black)
+        } else {
+            set(move.getTo(), EMP);
+            // if last move wasnt a capture, set square B to empty piece
+        }
+        _moveLimit++;
     }
 
     /** Return the Piece representing who is next to move. */
@@ -114,7 +147,26 @@ class Board {
     /** Return true iff FROM - TO is a legal move for the player currently on
      *  move. */
     boolean isLegal(Square from, Square to) {
-        return true;   // FIXME
+        if (blocked(from, to) || !from.isValidMove((to))) {
+            return false;
+        }
+        int count = 1; //
+        Square x = from.moveDest(from.direction(to), 1);
+        Square y = from.moveDest(to.direction(from), 1);
+        while (x != null) {
+            if (get(x) == BP || get(x) == WP)
+                count++;
+            x = x.moveDest(from.direction(to),1);
+        }
+        while (y != null) {
+            if (get(y) == BP || get(y) == WP)
+                count++;
+            y = y.moveDest(to.direction(from), 1);
+        }
+        if (count != from.distance(to)) {
+            return false;
+        }
+        return true;
     }
 
     /** Return true iff MOVE is legal for the player currently on move.
@@ -125,7 +177,32 @@ class Board {
 
     /** Return a sequence of all legal moves from this position. */
     List<Move> legalMoves() {
-        return null;  // FIXME
+        List<Move> moves = new ArrayList<>();
+        List<Square> squares = new ArrayList<>();
+        for (int i = 0; i < _board.length; i++) {
+            if (_board[i].equals(turn())) {
+                int x = Math.floorDiv(i, BOARD_SIZE);
+                int y = i % BOARD_SIZE;
+                squares.add(sq(x, y));
+            }
+        }
+        for (Square s: squares) {
+            for (int i = 0; i < _board.length; i++) {
+                int x = Math.floorDiv(i, BOARD_SIZE);
+                int y = i % BOARD_SIZE;
+                boolean capture = false;
+                if (get(sq(x, y)).equals(turn().opposite())) {
+                    capture = true;
+                }
+                Move legal = Move.mv(s, sq(x, y), capture);
+                if (isLegal(legal)) {
+                    moves.add(legal);
+                }
+            }
+        }
+        return moves;
+
+
     }
 
     /** Return true iff the game is over (either player has all his
@@ -142,9 +219,18 @@ class Board {
     /** Return the winning side, if any.  If the game is not over, result is
      *  null.  If the game has ended in a tie, returns EMP. */
     Piece winner() {
-        if (!_winnerKnown) {
-            // FIXME
+        if (piecesContiguous(_turn)) {
+            _winner = _turn;
             _winnerKnown = true;
+        } else if (piecesContiguous(_turn.opposite())) {
+            _winner = _turn.opposite();
+            _winnerKnown = true;
+        } else if (_moves.size() >= _moveLimit) {
+            _winner = EMP;
+            _winnerKnown = true;
+        } else {
+            _winnerKnown = false;
+            _winner = null;
         }
         return _winner;
     }
@@ -185,7 +271,17 @@ class Board {
     /** Return true if a move from FROM to TO is blocked by an opposing
      *  piece or by a friendly piece on the target square. */
     private boolean blocked(Square from, Square to) {
-        return false; // FALSE
+        if (to == null || to == from || get(from) == get(to)) {
+            return true;
+        }
+        from = from.moveDest(from.direction(to), 1);
+        while (!from.equals(to)) {
+            if (get(from) == turn().opposite()) {
+                return true;
+            }
+            from = from.moveDest(from.direction(to), 1);
+        }
+        return false;
     }
 
     /** Return the size of the as-yet unvisited cluster of squares
@@ -193,17 +289,37 @@ class Board {
      *  have already been processed or are in different clusters.  Update
      *  VISITED to reflect squares counted. */
     private int numContig(Square sq, boolean[][] visited, Piece p) {
-        return 0;  // FIXME
+        if (p == EMP || get(sq) != p || visited[sq.col()][sq.row()]) {
+            return 0;
+        }
+        visited[sq.col()][sq.row()] = true;
+        int count = 1;
+        for (Square s: sq.adjacent()) {
+            count += numContig(s, visited, p);
+        }
+        return count;
     }
 
     /** Set the values of _whiteRegionSizes and _blackRegionSizes. */
     private void computeRegions() {
+        boolean[][] visited = new boolean[BOARD_SIZE][BOARD_SIZE];
         if (_subsetsInitialized) {
             return;
         }
         _whiteRegionSizes.clear();
         _blackRegionSizes.clear();
-        // FIXME
+        for (int i = 0; i < visited.length; i++) {
+            for (int j = 0; j < visited[0].length; j++) {
+                if (!visited[i][j]) {
+                    if (get(sq(i, j)) == WP) {
+                        _whiteRegionSizes.add(numContig(sq(i, j), visited, WP));
+                    }
+                    if (get(sq(i, j)) == BP) {
+                        _blackRegionSizes.add(numContig(sq(i, j), visited, BP));
+                    }
+                }
+            }
+        }
         Collections.sort(_whiteRegionSizes, Collections.reverseOrder());
         Collections.sort(_blackRegionSizes, Collections.reverseOrder());
         _subsetsInitialized = true;
