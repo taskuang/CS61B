@@ -12,10 +12,9 @@ import java.util.regex.Pattern;
 
 import static loa.Piece.*;
 import static loa.Square.*;
-import java.lang.Math;
 
 /** Represents the state of a game of Lines of Action.
- *  @author
+ *  @author Tasman Kuang
  */
 class Board {
 
@@ -112,8 +111,7 @@ class Board {
         assert isLegal(move);
         if (get(move.getTo()) != EMP) {
             _moves.add(move.captureMove());
-        }
-        else {
+        } else {
             _moves.add(move);
         }
         set(move.getTo(), get(move.getFrom()), turn().opposite());
@@ -126,15 +124,11 @@ class Board {
     void retract() {
         assert movesMade() > 0;
         Move move = _moves.remove(_moves.size() - 1);
-        //Move: move white piece from square A to B, square A now has EMP and B has white piece
         set(move.getFrom(), turn().opposite(), _turn.opposite());
-        // set A to the opposite of current color (white) and reset turn to white
         if (move.isCapture()) {
             set(move.getTo(), turn().opposite());
-            // set the square B to opposite of white (black)
         } else {
             set(move.getTo(), EMP);
-            // if last move wasnt a capture, set square B to empty piece
         }
         _moveLimit++;
     }
@@ -150,17 +144,19 @@ class Board {
         if (blocked(from, to) || !from.isValidMove((to))) {
             return false;
         }
-        int count = 1; //
+        int count = 1;
         Square x = from.moveDest(from.direction(to), 1);
         Square y = from.moveDest(to.direction(from), 1);
         while (x != null) {
-            if (get(x) == BP || get(x) == WP)
+            if (get(x) == BP || get(x) == WP) {
                 count++;
-            x = x.moveDest(from.direction(to),1);
+            }
+            x = x.moveDest(from.direction(to), 1);
         }
         while (y != null) {
-            if (get(y) == BP || get(y) == WP)
+            if (get(y) == BP || get(y) == WP) {
                 count++;
+            }
             y = y.moveDest(to.direction(from), 1);
         }
         if (count != from.distance(to)) {
@@ -177,7 +173,7 @@ class Board {
 
     /** Return a sequence of all legal moves from this position. */
     List<Move> legalMoves() {
-        List<Move> moves = new ArrayList<>();
+        /**List<Move> moves = new ArrayList<>();
         List<Square> squares = new ArrayList<>();
         for (int i = 0; i < _board.length; i++) {
             if (_board[i].equals(turn())) {
@@ -200,7 +196,8 @@ class Board {
                 }
             }
         }
-        return moves;
+        return moves;**/
+        return null;
 
 
     }
@@ -335,8 +332,6 @@ class Board {
             return _blackRegionSizes;
         }
     }
-
-    // FIXME: Other methods, variables?
 
     /** The standard initial configuration for Lines of Action (bottom row
      *  first). */
