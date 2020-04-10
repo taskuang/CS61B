@@ -1,4 +1,5 @@
 import java.util.Arrays;
+import static java.lang.System.arraycopy;
 
 /**
  * Note that every sorting algorithm takes in an argument k. The sorting 
@@ -42,7 +43,13 @@ public class MySortingAlgorithms {
     public static class InsertionSort implements SortingAlgorithm {
         @Override
         public void sort(int[] array, int k) {
-            // FIXME
+            if (k > 1 || array.length > 1) {
+                for (int i = 0; i < Math.min(k, array.length); i++) {
+                    for (int j = i; j > 0 && array[j] < array[j - 1]; j--) {
+                        swap(array, j, j - 1);
+                    }
+                }
+            }
         }
 
         @Override
@@ -60,9 +67,19 @@ public class MySortingAlgorithms {
     public static class SelectionSort implements SortingAlgorithm {
         @Override
         public void sort(int[] array, int k) {
-            // FIXME
+            if (array.length > 1 || k > 1) {
+                k = Math.min(array.length, k);
+                for (int i = 0; i < k; i++) {
+                    int min = i;
+                    for (int j = i + 1; j < k; j++) {
+                        if (array[j] < array[min]) {
+                            min = j;
+                        }
+                    }
+                    swap(array, i, min);
+                }
+            }
         }
-
         @Override
         public String toString() {
             return "Selection Sort";
@@ -77,10 +94,35 @@ public class MySortingAlgorithms {
     public static class MergeSort implements SortingAlgorithm {
         @Override
         public void sort(int[] array, int k) {
-            // FIXME
+            if (k > 1 || array.length > 1) {
+                sort(array, 0, k);
+            }
         }
 
-        // may want to add additional methods
+
+        private void sort(int[] array, int start, int end) {
+            if (start + 1 != end) {
+                int mid = (start + end) / 2;
+                sort(array, start, mid);
+                sort(array, mid, end);
+                merge(array, start, mid, end);
+            }
+        }
+
+        private void merge(int[] array, int start, int mid, int end) {
+            for (int i = mid; i < end; i ++) {
+                int temp = array[i];
+                int j;
+                for (j = i - 1; j >= start; j--) {
+                    if (array[j] > temp) {
+                        array[j+1]=array[j];
+                    } else {
+                        break;
+                    }
+                }
+                array[j+1]=temp;
+            }
+        }
 
         @Override
         public String toString() {
@@ -148,9 +190,39 @@ public class MySortingAlgorithms {
     public static class LSDSort implements SortingAlgorithm {
         @Override
         public void sort(int[] a, int k) {
-            // FIXME
+            if (a.length > 1 || k > 1) {
+                int max = a[0];
+                int min = a[0];
+                for (int i = 1; i < Math.min(a.length, k); i++) {
+                    if (a[i] > max)
+                        max = a[i];
+                    else if (a[i] < min)
+                        min = a[i];
+                }
+                int x = 1;
+                while ((max - min) / x >= 1) {
+                    sort(a, k, x, min);
+                    x *= k;
+                }
+            }
         }
 
+        public void sort(int[] a, int radix, int x, int min) {
+            int[] buckets = new int[radix];
+            for (int i = 0; i < radix; i++) {
+                buckets[((a[i] - min) / x) % radix] += 1;
+            }
+            for (int i = 1; i < radix; i++) {
+                buckets[i] += buckets[i - 1];
+            }
+            int[] result = new int[a.length];
+            for (int i = radix - 1; i >= 0; i--) {
+                result[--buckets[((a[i] - min) / x) % radix]] = a[i];
+            }
+            for (int i = 0; i < radix; i++) {
+                a[i] = result[i];
+            }
+        }
         @Override
         public String toString() {
             return "LSD Sort";
@@ -163,7 +235,7 @@ public class MySortingAlgorithms {
     public static class MSDSort implements SortingAlgorithm {
         @Override
         public void sort(int[] a, int k) {
-            // FIXME
+            //FIXME
         }
 
         @Override
